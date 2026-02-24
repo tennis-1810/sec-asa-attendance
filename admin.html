@@ -26,16 +26,19 @@
 
     h2 { color:#418EDE; }
 
-    input {
-      width:100%;
-      padding:10px;
-      margin:8px 0;
-      border-radius:8px;
+    input, select {
+      padding:8px;
+      border-radius:6px;
       border:1px solid #ccc;
     }
 
+    input {
+      width:100%;
+      margin:8px 0;
+    }
+
     button {
-      padding:10px 15px;
+      padding:8px 14px;
       background:#E55527;
       color:white;
       border:none;
@@ -147,13 +150,26 @@
   </div>
 
   <!-- FILTERS -->
-  <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
+  <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    
     <input type="date" id="dateFilter">
     <input type="month" id="monthFilter">
+    
     <input type="text" id="searchId" placeholder="Search Employee ID">
+
+    <!-- AREA FILTER -->
+    <select id="areaFilter">
+      <option value="">All Areas</option>
+      <option value="Atmakur">Atmakur</option>
+      <option value="Bathalapalli">Bathalapalli</option>
+      <option value="Dharmavaram">Dharmavaram</option>
+      <option value="Anantapur">Anantapur</option>
+    </select>
+
     <button onclick="applyFilters()">Apply</button>
     <button onclick="exportPDF()">Export PDF</button>
     <button onclick="loadData()">Refresh</button>
+
   </div>
 
   <!-- TABLE -->
@@ -239,12 +255,13 @@ function updateSummary(data){
   document.getElementById("todayCount").innerText = todayEntries.length;
 }
 
-// FILTERS
+// APPLY FILTERS
 function applyFilters(){
 
   const dateVal = document.getElementById("dateFilter").value;
   const monthVal = document.getElementById("monthFilter").value;
   const searchVal = document.getElementById("searchId").value.toLowerCase();
+  const areaVal = document.getElementById("areaFilter").value;
 
   let filtered = allData;
 
@@ -262,6 +279,10 @@ function applyFilters(){
     filtered = filtered.filter(row=> row[2].toLowerCase().includes(searchVal));
   }
 
+  if(areaVal){
+    filtered = filtered.filter(row=> row[3] === areaVal);
+  }
+
   renderTable(filtered);
   updateSummary(filtered);
 }
@@ -269,7 +290,7 @@ function applyFilters(){
 // PDF EXPORT
 function exportPDF(){
 
-  let content = "SEC-ASA Monthly Attendance Report\n\n";
+  let content = "SEC-ASA Attendance Report\n\n";
 
   const rows = document.querySelectorAll("#attendanceTable tr");
 
