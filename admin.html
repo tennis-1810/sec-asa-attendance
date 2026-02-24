@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SEC-ASA Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #418EDE;
+    }
+
+    input {
+      padding: 10px;
+      margin: 8px;
+      width: 250px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #E55527;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    th {
+      background: #418EDE;
+      color: white;
+    }
+
+    img {
+      width: 60px;
+      border-radius: 6px;
+    }
+
+    #dashboard {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>SEC-ASA Admin Login</h2>
+
+<div id="login">
+  <input type="text" id="username" placeholder="Username"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="dashboard">
+  <h2>Attendance Dashboard</h2>
+  <button onclick="loadData()">Refresh Data</button>
+
+  <table id="attendanceTable">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Name</th>
+        <th>Employee ID</th>
+        <th>Area</th>
+        <th>Type</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Photo</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+
+const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec";
+
+function login() {
+
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  if (username === "SEC-ASA" && password === "123456789") {
+
+    document.getElementById("login").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    loadData();
+
+  } else {
+    alert("Invalid credentials");
+  }
+}
+
+function loadData() {
+
+  fetch(scriptURL)
+    .then(res => res.json())
+    .then(data => {
+
+      const tableBody = document.querySelector("#attendanceTable tbody");
+      tableBody.innerHTML = "";
+
+      data.reverse().forEach(row => {
+
+        const tr = document.createElement("tr");
+
+        row.forEach((cell, index) => {
+
+          const td = document.createElement("td");
+
+          if (index === 7 && cell) {
+            td.innerHTML = `<a href="${cell}" target="_blank">
+                              <img src="${cell}">
+                            </a>`;
+          } else {
+            td.textContent = cell;
+          }
+
+          tr.appendChild(td);
+        });
+
+        tableBody.appendChild(tr);
+      });
+
+    })
+    .catch(err => alert("Error loading data"));
+}
+
+</script>
+
+</body>
+</html>
