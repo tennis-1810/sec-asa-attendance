@@ -1,98 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SEC-ASA Admin Panel</title>
+  <title>SEC-ASA Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body { font-family: Arial; background: #f4f6f9; text-align: center; padding: 20px; }
-    h2 { color: #418EDE; }
-    input { padding: 10px; margin: 8px; width: 250px; }
-    button { padding: 10px 20px; background: #E55527; border: none; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 14px; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    th { background: #418EDE; color: white; }
-    img { width: 60px; border-radius: 6px; }
-    #dashboard { display: none; }
+    body {
+      margin:0;
+      font-family:Segoe UI;
+      background:#f4f6f9;
+    }
+
+    .header {
+      background:linear-gradient(90deg,#418EDE,#E55527);
+      padding:20px;
+      color:white;
+      text-align:center;
+      font-size:22px;
+      font-weight:bold;
+    }
+
+    .container {
+      padding:20px;
+    }
+
+    button {
+      padding:10px 15px;
+      background:#E55527;
+      color:white;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:bold;
+      margin-bottom:15px;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background:#418EDE;
+      color:white;
+      padding:10px;
+    }
+
+    td {
+      padding:8px;
+      text-align:center;
+      border-bottom:1px solid #ddd;
+    }
+
+    img {
+      width:50px;
+      border-radius:5px;
+    }
   </style>
 </head>
 
 <body>
 
-<h2>SEC-ASA Admin Login</h2>
-
-<div id="login">
-  <input type="text" id="username" placeholder="Username"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
+<div class="header">
+  Sports & Education Centre - ASA | Admin Dashboard
 </div>
 
-<div id="dashboard">
-  <h2>Attendance Dashboard</h2>
+<div class="container">
+
   <button onclick="loadData()">Refresh Data</button>
-  <table id="attendanceTable">
+
+  <table>
     <thead>
       <tr>
-        <th>Timestamp (IST)</th>
+        <th>Timestamp</th>
         <th>Name</th>
-        <th>Employee ID</th>
+        <th>ID</th>
         <th>Area</th>
         <th>Type</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
+        <th>Lat</th>
+        <th>Lng</th>
         <th>Photo</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="tableBody"></tbody>
   </table>
+
 </div>
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec";
 
-// Admin Login
-function login() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  if(username === "SEC-ASA" && password === "123456789") {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    loadData();
-  } else {
-    alert("Invalid credentials");
-  }
-}
-
-// Load attendance data
 function loadData() {
   fetch(scriptURL)
-    .then(res => res.json())
-    .then(data => {
-      const tableBody = document.querySelector("#attendanceTable tbody");
-      tableBody.innerHTML = "";
-
-      data.reverse().forEach(row => {
-        const tr = document.createElement("tr");
-
-        row.forEach((cell,index)=>{
-          const td = document.createElement("td");
-
-          if(index === 7 && cell) {
-            td.innerHTML = `<a href="${cell}" target="_blank">
-                              <img src="${cell}">
-                            </a>`;
-          } else {
-            td.textContent = cell;
-          }
-
-          tr.appendChild(td);
-        });
-
-        tableBody.appendChild(tr);
+  .then(res=>res.json())
+  .then(data=>{
+    const body=document.getElementById("tableBody");
+    body.innerHTML="";
+    data.reverse().forEach(row=>{
+      const tr=document.createElement("tr");
+      row.forEach((cell,i)=>{
+        const td=document.createElement("td");
+        if(i===7 && cell){
+          td.innerHTML=`<a href="${cell}" target="_blank"><img src="${cell}"></a>`;
+        } else {
+          td.textContent=cell;
+        }
+        tr.appendChild(td);
       });
-    })
-    .catch(err => alert("Error loading data"));
+      body.appendChild(tr);
+    });
+  });
 }
 </script>
 
