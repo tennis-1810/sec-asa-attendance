@@ -7,32 +7,73 @@
   <style>
     body {
       margin:0;
-      font-family:Segoe UI;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg,#418EDE,#E55527);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .card {
+      background:white;
+      padding:30px;
+      border-radius:15px;
+      width:350px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.2);
+      text-align:center;
+    }
+
+    h2 {
+      color:#418EDE;
+      margin-bottom:20px;
+    }
+
+    input {
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+    }
+
+    button {
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:8px;
+      font-weight:bold;
+      cursor:pointer;
+      background:#E55527;
+      color:white;
+      transition:0.3s;
+    }
+
+    button:hover {
+      background:#c7431b;
+    }
+
+    .dashboard {
+      display:none;
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
       background:#f4f6f9;
+      padding:20px;
+      overflow:auto;
     }
 
     .header {
       background:linear-gradient(90deg,#418EDE,#E55527);
-      padding:20px;
       color:white;
-      text-align:center;
-      font-size:22px;
+      padding:15px;
+      font-size:20px;
       font-weight:bold;
-    }
-
-    .container {
-      padding:20px;
-    }
-
-    button {
-      padding:10px 15px;
-      background:#E55527;
-      color:white;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
-      font-weight:bold;
-      margin-bottom:15px;
+      border-radius:10px;
+      margin-bottom:20px;
     }
 
     table {
@@ -50,26 +91,33 @@
 
     td {
       padding:8px;
-      text-align:center;
       border-bottom:1px solid #ddd;
+      text-align:center;
     }
 
     img {
       width:50px;
       border-radius:5px;
     }
+
   </style>
 </head>
 
 <body>
 
-<div class="header">
-  Sports & Education Centre - ASA | Admin Dashboard
+<div class="card" id="loginCard">
+  <h2>SEC-ASA Admin Login</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
 </div>
 
-<div class="container">
+<div class="dashboard" id="dashboard">
+  <div class="header">
+    Sports & Education Centre - ASA | Admin Dashboard
+  </div>
 
-  <button onclick="loadData()">Refresh Data</button>
+  <button onclick="loadData()" style="background:#E55527;color:white;border:none;padding:10px;border-radius:6px;margin-bottom:15px;">Refresh Data</button>
 
   <table>
     <thead>
@@ -86,11 +134,24 @@
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
-
 </div>
 
 <script>
+
 const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec";
+
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+
+  if(user === "SEC-ASA" && pass === "123456789") {
+    document.getElementById("loginCard").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    loadData();
+  } else {
+    alert("Invalid Credentials");
+  }
+}
 
 function loadData() {
   fetch(scriptURL)
@@ -113,6 +174,7 @@ function loadData() {
     });
   });
 }
+
 </script>
 
 </body>
