@@ -24,10 +24,7 @@
       text-align:center;
     }
 
-    h2 {
-      color:#418EDE;
-      margin-bottom:20px;
-    }
+    h2 { color:#418EDE; }
 
     input {
       width:100%;
@@ -38,21 +35,17 @@
     }
 
     button {
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      border:none;
-      border-radius:8px;
-      font-weight:bold;
-      cursor:pointer;
+      padding:10px 15px;
       background:#E55527;
       color:white;
-      transition:0.3s;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:bold;
+      margin:5px;
     }
 
-    button:hover {
-      background:#c7431b;
-    }
+    button:hover { opacity:0.9; }
 
     .dashboard {
       display:none;
@@ -93,6 +86,7 @@
       padding:8px;
       border-bottom:1px solid #ddd;
       text-align:center;
+      font-size:13px;
     }
 
     img {
@@ -100,11 +94,31 @@
       border-radius:5px;
     }
 
+    .summary {
+      display:flex;
+      gap:15px;
+      flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+
+    .cardBox {
+      background:#418EDE;
+      color:white;
+      padding:15px;
+      border-radius:10px;
+      min-width:150px;
+    }
+
+    .cardBox.orange {
+      background:#E55527;
+    }
+
   </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div class="card" id="loginCard">
   <h2>SEC-ASA Admin Login</h2>
   <input type="text" id="username" placeholder="Username">
@@ -112,14 +126,38 @@
   <button onclick="login()">Login</button>
 </div>
 
+<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
+
   <div class="header">
     Sports & Education Centre - ASA | Admin Dashboard
   </div>
 
-  <button onclick="loadData()" style="background:#E55527;color:white;border:none;padding:10px;border-radius:6px;margin-bottom:15px;">Refresh Data</button>
+  <!-- SUMMARY CARDS -->
+  <div class="summary">
+    <div class="cardBox">
+      <div>Today Present</div>
+      <div id="todayCount" style="font-size:22px;font-weight:bold;">0</div>
+    </div>
 
-  <table>
+    <div class="cardBox orange">
+      <div>Total Entries</div>
+      <div id="totalCount" style="font-size:22px;font-weight:bold;">0</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
+    <input type="date" id="dateFilter">
+    <input type="month" id="monthFilter">
+    <input type="text" id="searchId" placeholder="Search Employee ID">
+    <button onclick="applyFilters()">Apply</button>
+    <button onclick="exportPDF()">Export PDF</button>
+    <button onclick="loadData()">Refresh</button>
+  </div>
+
+  <!-- TABLE -->
+  <table id="attendanceTable">
     <thead>
       <tr>
         <th>Timestamp</th>
@@ -134,12 +172,15 @@
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
+
 </div>
 
 <script>
 
 const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec";
+let allData = [];
 
+// LOGIN
 function login() {
   const user = document.getElementById("username").value;
   const pass = document.getElementById("password").value;
@@ -153,26 +194,97 @@ function login() {
   }
 }
 
+// LOAD DATA
 function loadData() {
   fetch(scriptURL)
   .then(res=>res.json())
   .then(data=>{
-    const body=document.getElementById("tableBody");
-    body.innerHTML="";
-    data.reverse().forEach(row=>{
-      const tr=document.createElement("tr");
-      row.forEach((cell,i)=>{
-        const td=document.createElement("td");
-        if(i===7 && cell){
-          td.innerHTML=`<a href="${cell}" target="_blank"><img src="${cell}"></a>`;
-        } else {
-          td.textContent=cell;
-        }
-        tr.appendChild(td);
-      });
-      body.appendChild(tr);
-    });
+    allData = data;
+    renderTable(allData);
+    updateSummary(allData);
   });
+}
+
+// RENDER TABLE
+function renderTable(data){
+  const body=document.getElementById("tableBody");
+  body.innerHTML="";
+  
+  data.slice().reverse().forEach(row=>{
+    const tr=document.createElement("tr");
+    row.forEach((cell,i)=>{
+      const td=document.createElement("td");
+      if(i===7 && cell){
+        td.innerHTML=`<a href="${cell}" target="_blank"><img src="${cell}"></a>`;
+      } else {
+        td.textContent=cell;
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+// SUMMARY
+function updateSummary(data){
+
+  document.getElementById("totalCount").innerText = data.length;
+
+  const today = new Date().toLocaleDateString('en-GB');
+
+  const todayEntries = data.filter(row=>{
+    return row[0] && row[0].includes(today);
+  });
+
+  document.getElementById("todayCount").innerText = todayEntries.length;
+}
+
+// FILTERS
+function applyFilters(){
+
+  const dateVal = document.getElementById("dateFilter").value;
+  const monthVal = document.getElementById("monthFilter").value;
+  const searchVal = document.getElementById("searchId").value.toLowerCase();
+
+  let filtered = allData;
+
+  if(dateVal){
+    const formatted = dateVal.split("-").reverse().join("-");
+    filtered = filtered.filter(row=> row[0].includes(formatted));
+  }
+
+  if(monthVal){
+    const [year,month] = monthVal.split("-");
+    filtered = filtered.filter(row=> row[0].includes(month+"-"+year));
+  }
+
+  if(searchVal){
+    filtered = filtered.filter(row=> row[2].toLowerCase().includes(searchVal));
+  }
+
+  renderTable(filtered);
+  updateSummary(filtered);
+}
+
+// PDF EXPORT
+function exportPDF(){
+
+  let content = "SEC-ASA Monthly Attendance Report\n\n";
+
+  const rows = document.querySelectorAll("#attendanceTable tr");
+
+  rows.forEach(row=>{
+    const cols = row.querySelectorAll("td, th");
+    let rowData = [];
+    cols.forEach(col=> rowData.push(col.innerText));
+    content += rowData.join(" | ") + "\n";
+  });
+
+  const blob = new Blob([content], { type: "application/pdf" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "SEC_ASA_Attendance_Report.pdf";
+  link.click();
 }
 
 </script>
