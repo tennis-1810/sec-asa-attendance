@@ -62,25 +62,20 @@
       color:white;
     }
 
-    .clockin:hover {
-      background:#2f6fb8;
-    }
+    .clockin:hover { background:#2f6fb8; }
 
     .clockout {
       background:#E55527;
       color:white;
     }
 
-    .clockout:hover {
-      background:#c7431b;
-    }
+    .clockout:hover { background:#c7431b; }
 
     .footer {
       margin-top:15px;
       font-size:12px;
       color:#777;
     }
-
   </style>
 </head>
 
@@ -91,7 +86,6 @@
   <h2>Sports & Education Centre - ASA</h2>
 
   <input type="text" id="name" placeholder="Employee Name">
-  <input type="text" id="empId" placeholder="Employee ID">
 
   <select id="area">
     <option>Atmakur</option>
@@ -112,8 +106,10 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec";
 
+const scriptURL = "https://script.google.com/macros/s/AKfycbz9eODq2buLCJO7Fo8X4z450KE2U5WA2cwauh0K3zEDi5hsuQV3omfZC2-_ue-EHIeMvQ/exec"; // keep your deployed URL
+
+// Start Camera
 navigator.mediaDevices.getUserMedia({ video: true })
 .then(stream => { document.getElementById('video').srcObject = stream; })
 .catch(() => alert("Camera permission required"));
@@ -122,7 +118,7 @@ function getLocation() {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
       pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(),
+      () => reject("Location permission required"),
       { enableHighAccuracy:true }
     );
   });
@@ -131,29 +127,59 @@ function getLocation() {
 async function clock(type) {
 
   const name = document.getElementById("name").value;
-  const empId = document.getElementById("empId").value;
   const area = document.getElementById("area").value;
 
-  if(!name || !empId) { alert("Enter name & ID"); return; }
+  if(!name) { alert("Enter employee name"); return; }
 
-  let location = await getLocation();
+  let location;
+  try {
+    location = await getLocation();
+  } catch {
+    alert("Location permission required");
+    return;
+  }
 
   const video = document.getElementById("video");
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  canvas.getContext("2d").drawImage(video,0,0);
+  const ctx = canvas.getContext("2d");
 
-  const photo = canvas.toDataURL("image/jpeg").split(',')[1];
+  ctx.drawImage(video,0,0);
+
+  // ---- GPS WATERMARK ----
+  const now = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(0, canvas.height - 140, canvas.width, 140);
+
+  ctx.fillStyle = "white";
+  ctx.font = "30px Arial";
+  ctx.fillText("Sports & Education Centre - ASA", 20, canvas.height - 100);
+  ctx.fillText("Lat: " + location.lat.toFixed(6), 20, canvas.height - 70);
+  ctx.fillText("Lng: " + location.lng.toFixed(6), 20, canvas.height - 40);
+  ctx.fillText("Time: " + now, 20, canvas.height - 10);
+  ctx.fillText("Type: " + type, canvas.width - 250, canvas.height - 10);
+  // ------------------------
+
+  const photo = canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
 
   fetch(scriptURL,{
     method:"POST",
-    body: JSON.stringify({ name, empId, area, type, lat:location.lat, lng:location.lng, photo })
+    body: JSON.stringify({
+      name,
+      area,
+      type,
+      lat: location.lat,
+      lng: location.lng,
+      photo
+    })
   })
   .then(res=>res.text())
   .then(data=>alert(data))
   .catch(()=>alert("Error submitting"));
 }
+
 </script>
 
 </body>
