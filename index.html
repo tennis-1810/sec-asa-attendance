@@ -94,7 +94,6 @@
       font-size:12px;
       color:#888;
     }
-
   </style>
 </head>
 
@@ -110,6 +109,13 @@
 
   <select id="area">
     <option>Anantapur</option>
+  </select>
+
+  <!-- ✅ NEW SESSION DROPDOWN -->
+  <select id="session">
+    <option value="">Select Session</option>
+    <option>Morning</option>
+    <option>Evening</option>
   </select>
 
   <video id="video" autoplay playsinline></video>
@@ -146,8 +152,10 @@ async function clock(type) {
 
   const name = document.getElementById("name").value;
   const area = document.getElementById("area").value;
+  const session = document.getElementById("session").value; // ✅ NEW
 
   if(!name) { alert("Enter employee name"); return; }
+  if(!session) { alert("Select session"); return; } // ✅ NEW
 
   let location;
   try {
@@ -188,6 +196,7 @@ async function clock(type) {
       name,
       area,
       type,
+      session, // ✅ NEW
       lat: location.lat,
       lng: location.lng,
       photo
